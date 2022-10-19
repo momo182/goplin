@@ -1440,10 +1440,6 @@ func (c *Client) GetAuthorField(note Note) (string, error) {
 	}
 }
 
-func (t *Tag) AsStr() string {
-	return t.Title
-}
-
 func (c *Client) CreateFolder(folder_name string, parent_id string) error {
 	//var result tagsResult
 
@@ -1519,4 +1515,16 @@ func (c *Client) DeleteFolder(folder_id string) error {
 
 		return err
 	}
+}
+
+func (t *Tag) AsStr() string {
+	return t.Title
+}
+
+func (f *Folder) AsStr() string {
+	return f.Title
+}
+
+func (n *Note) AsStr() string {
+	return n.Title
 }
