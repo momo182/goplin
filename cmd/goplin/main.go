@@ -10,7 +10,7 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/imroc/req/v3"
-	"github.com/piccobit/goplin"
+	"github.com/momo182/goplin"
 	"github.com/spf13/viper"
 )
 

@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/alecthomas/kong v0.6.1
+	github.com/davecgh/go-spew v1.1.1
 	github.com/imroc/req/v3 v3.22.0
 	github.com/spf13/viper v1.13.0
 )
