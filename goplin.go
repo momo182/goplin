@@ -800,6 +800,42 @@ func (c *Client) GetNote(id string, fields string) (Note, error) {
 	return note, err
 }
 
+func (c *Client) UpdateNote(id string, title string, parent_id string) error {
+
+	bodyParams := map[string]string{
+		"parent_id": parent_id,
+		"title":     title,
+	}
+
+	resp, err := c.handle.R().
+		SetPathParam("id", id).
+		SetQueryParam("token", c.apiToken).
+		SetBody(bodyParams).
+		Put(fmt.Sprintf("http://localhost:%d/notes/{id}", c.port))
+	if err != nil {
+		return err
+	}
+
+	if resp.IsError() {
+		if resp.StatusCode == 404 {
+			err = fmt.Errorf("could not find note with ID '%s", id)
+		} else {
+			err = fmt.Errorf("got error response, raw dump:\n%s", resp.Dump())
+		}
+
+		return err
+	}
+
+	if resp.IsSuccess() {
+		return nil
+	}
+
+	// Handle response.
+	err = fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+
+	return err
+}
+
 func (c *Client) GetNotesByTag(id string, orderBy string, orderDir string) ([]Note, error) {
 	var result notesResult
 	var notes []Note
