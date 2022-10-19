@@ -5,6 +5,7 @@ package goplin
 import (
 	"errors"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"strconv"
 	"strings"
 	"time"
@@ -1250,6 +1251,194 @@ func (c *Client) Search(query string, queryType string, fields string) ([]Item, 
 	}
 }
 
+func (c *Client) GetNoteTags(id string, orderBy string, orderDir string) ([]Tag, error) {
+	var result tagsResult
+	var tags []Tag
+
+	page := 1
+
+	queryParams := map[string]string{
+		"token":  c.apiToken,
+		"fields": "id,parent_id,title",
+		"page":   strconv.Itoa(page),
+	}
+
+	if len(orderBy) != 0 {
+		queryParams["order_by"] = orderBy
+	}
+
+	if len(orderDir) != 0 {
+		queryParams["order_dir"] = strings.ToUpper(orderDir)
+	}
+
+	for {
+		resp, err := c.handle.R().
+			SetPathParam("id", id).
+			SetQueryParams(queryParams).
+			SetResult(&result).
+			SetError(&result).
+			Get(fmt.Sprintf("http://localhost:%d/notes/{id}/tags", c.port))
+		if err != nil {
+			return tags, err
+		}
+
+		if resp.IsError() {
+			if resp.StatusCode == 404 {
+				err = fmt.Errorf("could not find note with IDs '%s", id)
+			} else {
+				err = fmt.Errorf("got error response, raw dump:\n%s", resp.Dump())
+			}
+
+			return tags, err
+		}
+
+		if resp.IsSuccess() {
+			for _, tag := range result.Items {
+				tags = append(tags, tag)
+			}
+
+			if result.HasMore {
+				page++
+
+				queryParams["page"] = strconv.Itoa(page)
+
+				continue
+			} else {
+				return tags, nil
+			}
+		}
+
+		// Handle response.
+		err = fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+
+		return tags, err
+	}
+}
+
 func (c *Client) GetApiToken() string {
 	return c.apiToken
+}
+
+func (c *Client) CreateTagsNotes(note_id string, tagID string) error {
+	//var result tagsResult
+
+	queryParams := map[string]string{
+		"token": c.apiToken,
+	}
+
+	for {
+		//c.handle.DevMode()
+		resp, err := c.handle.R().
+			SetPathParam("tagID", tagID).
+			SetBodyJsonString(fmt.Sprintf("{\"id\": \"%s\"}", note_id)).
+			SetQueryParams(queryParams).
+			Post(fmt.Sprintf("http://localhost:%d/tags/{tagID}/notes", c.port))
+		if err != nil {
+			return err
+		}
+
+		if resp.IsError() {
+			// Handle response.
+			spew.Dump(resp)
+			err = fmt.Errorf("got error response, raw dump:\n%s", resp.Error())
+
+			return err
+		}
+
+		if resp.IsSuccess() {
+			return nil
+		}
+
+		// Handle response.
+		err = fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+
+		return err
+	}
+}
+
+func (c *Client) UpdateNoteAuthor(note Note, value string) error {
+	//var result tagsResult
+
+	queryParams := map[string]string{
+		"token": c.apiToken,
+	}
+
+	bodyParams := map[string]string{
+		"author": value,
+	}
+
+	for {
+		//c.handle.DevMode()
+		resp, err := c.handle.R().
+			SetPathParam("noteid", note.ID).
+			//SetBodyJsonString(fmt.Sprintf("{\"id\": \"%s\"}", note_id)).
+			SetBody(bodyParams).
+			SetQueryParams(queryParams).
+			Put(fmt.Sprintf("http://localhost:%d/notes/{noteid}", c.port))
+		if err != nil {
+			return err
+		}
+
+		if resp.IsError() {
+			// Handle response.
+			spew.Dump(resp)
+			err = fmt.Errorf("got error response, raw dump:\n%s", resp.Error())
+
+			return err
+		}
+
+		if resp.IsSuccess() {
+			return nil
+		}
+
+		// Handle response.
+		err = fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+
+		return err
+	}
+}
+
+func (c *Client) GetAuthorField(note Note) (string, error) {
+	var this_note Note
+	var result string
+
+	queryParams := map[string]string{
+		"token": c.apiToken,
+	}
+
+	for {
+		//c.handle.DevMode()
+		resp, err := c.handle.R().
+			SetPathParam("noteid", note.ID).
+			SetQueryParam("fields", "id,title,author").
+			SetQueryParams(queryParams).
+			SetResult(&this_note).
+			SetError(&this_note).
+			Get(fmt.Sprintf("http://localhost:%d/notes/{noteid}", c.port))
+		if err != nil {
+			return result, err
+		}
+
+		if resp.IsError() {
+			// Handle response.
+			spew.Dump(resp)
+			err = fmt.Errorf("got error response, raw dump:\n%s", resp.Error())
+
+			return result, err
+		}
+
+		if resp.IsSuccess() {
+			result = this_note.Author
+			return result, nil
+		}
+
+		// Handle response.
+		err = fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+
+		return result, err
+	}
+}
+
+func (t *Tag) AsStr() string {
+	return t.Title
 }
