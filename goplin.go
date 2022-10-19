@@ -5,10 +5,11 @@ package goplin
 import (
 	"errors"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
 
 	"github.com/imroc/req/v3"
 )
@@ -1441,4 +1442,81 @@ func (c *Client) GetAuthorField(note Note) (string, error) {
 
 func (t *Tag) AsStr() string {
 	return t.Title
+}
+
+func (c *Client) CreateFolder(folder_name string, parent_id string) error {
+	//var result tagsResult
+
+	queryParams := map[string]string{
+		"token": c.apiToken,
+	}
+
+	bodyParams := map[string]string{
+		"title":     folder_name,
+		"parent_id": parent_id,
+	}
+
+	for {
+		//c.handle.DevMode()
+		resp, err := c.handle.R().
+			SetBody(bodyParams).
+			SetQueryParams(queryParams).
+			Post(fmt.Sprintf("http://localhost:%d/folders", c.port))
+		if err != nil {
+			return err
+		}
+
+		if resp.IsError() {
+			// Handle response.
+			spew.Dump(resp)
+			err = fmt.Errorf("got error response, raw dump:\n%s", resp.Error())
+
+			return err
+		}
+
+		if resp.IsSuccess() {
+			return nil
+		}
+
+		// Handle response.
+		err = fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+
+		return err
+	}
+}
+
+func (c *Client) DeleteFolder(folder_id string) error {
+	//var result tagsResult
+
+	queryParams := map[string]string{
+		"token": c.apiToken,
+	}
+
+	for {
+		//c.handle.DevMode()
+		resp, err := c.handle.R().
+			SetPathParam("folder_id", folder_id).
+			SetQueryParams(queryParams).
+			Delete(fmt.Sprintf("http://localhost:%d/folders/{folder_id}", c.port))
+		if err != nil {
+			return err
+		}
+
+		if resp.IsError() {
+			// Handle response.
+			spew.Dump(resp)
+			err = fmt.Errorf("got error response, raw dump:\n%s", resp.Error())
+
+			return err
+		}
+
+		if resp.IsSuccess() {
+			return nil
+		}
+
+		// Handle response.
+		err = fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+
+		return err
+	}
 }
