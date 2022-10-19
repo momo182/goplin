@@ -766,6 +766,61 @@ func (c *Client) GetTag(id string, fields string) (Tag, error) {
 	return tag, err
 }
 
+// queryParams := map[string]string{
+// 	"token": c.apiToken,
+// }
+
+// bodyParams := map[string]string{
+// 	"title":     folder_name,
+// 	"parent_id": parent_id,
+// }
+
+// for {
+// 	//c.handle.DevMode()
+// 	resp, err := c.handle.R().
+// 		SetBody(bodyParams).
+// 		SetQueryParams(queryParams).
+// 		Post(fmt.Sprintf("http://localhost:%d/folders", c.port))
+// 	if err != nil {
+
+func (c *Client) CreateTag(title string) error {
+	queryParams := map[string]string{
+		"token": c.apiToken,
+	}
+
+	bodyParams := map[string]string{
+		"title": title,
+	}
+
+	resp, err := c.handle.R().
+		SetBody(bodyParams).
+		SetQueryParams(queryParams).
+		Post(fmt.Sprintf("http://localhost:%d/tags", c.port))
+	if err != nil {
+		return err
+	}
+
+	if resp.IsError() {
+		if resp.StatusCode == 404 {
+			err = fmt.Errorf("could not find tag with IDs '%s", id)
+
+		} else {
+			err = fmt.Errorf("got error response, raw dump:\n%s", resp.Dump())
+		}
+
+		return err
+	}
+
+	if resp.IsSuccess() {
+		return nil
+	}
+
+	// Handle response.
+	err = fmt.Errorf("got unexpected response, raw dump:\n%s", resp.Dump())
+
+	return err
+}
+
 func (c *Client) GetNote(id string, fields string) (Note, error) {
 	var note Note
 
