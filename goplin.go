@@ -766,23 +766,6 @@ func (c *Client) GetTag(id string, fields string) (Tag, error) {
 	return tag, err
 }
 
-// queryParams := map[string]string{
-// 	"token": c.apiToken,
-// }
-
-// bodyParams := map[string]string{
-// 	"title":     folder_name,
-// 	"parent_id": parent_id,
-// }
-
-// for {
-// 	//c.handle.DevMode()
-// 	resp, err := c.handle.R().
-// 		SetBody(bodyParams).
-// 		SetQueryParams(queryParams).
-// 		Post(fmt.Sprintf("http://localhost:%d/folders", c.port))
-// 	if err != nil {
-
 func (c *Client) CreateTag(title string) error {
 	queryParams := map[string]string{
 		"token": c.apiToken,
