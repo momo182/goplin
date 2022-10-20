@@ -785,7 +785,7 @@ func (c *Client) CreateTag(title string) error {
 
 	if resp.IsError() {
 		if resp.StatusCode == 404 {
-			err = fmt.Errorf("could not find tag with IDs '%s", id)
+			err = fmt.Errorf("could not create tag")
 
 		} else {
 			err = fmt.Errorf("got error response, raw dump:\n%s", resp.Dump())
@@ -916,9 +916,7 @@ func (c *Client) GetNotesByTag(id string, orderBy string, orderDir string) ([]No
 		}
 
 		if resp.IsSuccess() {
-			for _, note := range result.Items {
-				notes = append(notes, note)
-			}
+			notes = append(notes, result.Items...)
 
 			if result.HasMore {
 				page++
@@ -976,9 +974,7 @@ func (c *Client) GetAllNotes(fields string, orderBy string, orderDir string) ([]
 		}
 
 		if resp.IsSuccess() {
-			for _, note := range result.Items {
-				notes = append(notes, note)
-			}
+			notes = append(notes, result.Items...)
 
 			if result.HasMore {
 				page++
@@ -1037,9 +1033,7 @@ func (c *Client) GetNotesInFolder(id string, fields string, orderBy string, orde
 		}
 
 		if resp.IsSuccess() {
-			for _, note := range result.Items {
-				notes = append(notes, note)
-			}
+			notes = append(notes, result.Items...)
 
 			if result.HasMore {
 				page++
@@ -1097,9 +1091,7 @@ func (c *Client) GetAllFolders(fields string, orderBy string, orderDir string) (
 		}
 
 		if resp.IsSuccess() {
-			for _, folder := range result.Items {
-				folders = append(folders, folder)
-			}
+			folders = append(folders, result.Items...)
 
 			if result.HasMore {
 				page++
@@ -1191,9 +1183,7 @@ func (c *Client) GetAllTags(orderBy string, orderDir string) ([]Tag, error) {
 		}
 
 		if resp.IsSuccess() {
-			for _, tag := range result.Items {
-				tags = append(tags, tag)
-			}
+			tags = append(tags, result.Items...)
 
 			if result.HasMore {
 				page++
@@ -1304,9 +1294,7 @@ func (c *Client) Search(query string, queryType string, fields string) ([]Item, 
 		}
 
 		if resp.IsSuccess() {
-			for _, item := range result.Items {
-				items = append(items, item)
-			}
+			items = append(items, result.Items...)
 
 			if result.HasMore {
 				page++
@@ -1368,9 +1356,7 @@ func (c *Client) GetNoteTags(id string, orderBy string, orderDir string) ([]Tag,
 		}
 
 		if resp.IsSuccess() {
-			for _, tag := range result.Items {
-				tags = append(tags, tag)
-			}
+			tags = append(tags, result.Items...)
 
 			if result.HasMore {
 				page++
